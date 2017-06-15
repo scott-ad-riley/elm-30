@@ -1,0 +1,45 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Main</title>
+		<script type="text/javascript" src="/main.js"></script>
+		<link rel="stylesheet" href="/style.css">
+	</head>
+	<body>
+		<audio id="clap" src="/sounds/clap.wav"></audio>
+		<audio id="hihat" src="/sounds/hihat.wav"></audio>
+		<audio id="kick" src="/sounds/kick.wav"></audio>
+		<audio id="openhat" src="/sounds/openhat.wav"></audio>
+		<audio id="boom" src="/sounds/boom.wav"></audio>
+		<audio id="ride" src="/sounds/ride.wav"></audio>
+		<audio id="snare" src="/sounds/snare.wav"></audio>
+		<audio id="tom" src="/sounds/tom.wav"></audio>
+		<audio id="tink" src="/sounds/tink.wav"></audio>
+
+
+		<script type="text/javascript">
+			var app = Elm.Main.fullscreen()
+
+			var drums = {
+				clap: document.getElementById('clap'),
+				hihat: document.getElementById('hihat'),
+				kick: document.getElementById('kick'),
+				openhat: document.getElementById('openhat'),
+				boom: document.getElementById('boom'),
+				ride: document.getElementById('ride'),
+				snare: document.getElementById('snare'),
+				tom: document.getElementById('tom'),
+				tink: document.getElementById('tink')
+			}
+
+			app.ports.playMp3.subscribe(function (mp3Name) {
+				var audio = drums[mp3Name]
+				audio.currentTime = 0;
+				audio.play();
+			})
+
+
+		</script>
+	</body>
+</html>
