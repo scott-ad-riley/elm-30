@@ -51,13 +51,10 @@ update msg model =
             if List.member keyCode (keyCodesIn model) then
                 ( model, Cmd.none )
             else
-                ( drumActivated model (drumForKeyCode keyCode), playMp3 (drumForKeyCode keyCode).mp3Name )
+                ( drumActivated model keyCode, playMp3 (drumForKeyCode keyCode).mp3Name )
 
         KeyUp keyCode ->
-            if List.member keyCode (keyCodesIn model) then
-                ( drumDeactivated model keyCode, Cmd.none )
-            else
-                ( model, Cmd.none )
+            ( drumDeactivated model keyCode, Cmd.none )
 
 
 keyCodesIn : List Drum -> List Keyboard.KeyCode
@@ -70,9 +67,9 @@ getDrumKeyCode drum =
     drum.keyCode
 
 
-drumActivated : List Drum -> Drum -> List Drum
-drumActivated model drum =
-    model ++ [ drum ]
+drumActivated : List Drum -> Keyboard.KeyCode -> List Drum
+drumActivated model keyCode =
+    model ++ [ drumForKeyCode keyCode ]
 
 
 drumDeactivated : List Drum -> Keyboard.KeyCode -> List Drum
@@ -119,7 +116,7 @@ drumForKeyCode keyCode =
             Drum 76 "L" "tink"
 
         _ ->
-            Debug.crash "Not a real drum dude"
+            Debug.crash "not a drum button"
 
 
 view : Model -> Html Msg

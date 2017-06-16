@@ -8985,17 +8985,6 @@ var _user$project$Main$drumDeactivated = F2(
 			},
 			model);
 	});
-var _user$project$Main$drumActivated = F2(
-	function (model, drum) {
-		return A2(
-			_elm_lang$core$Basics_ops['++'],
-			model,
-			{
-				ctor: '::',
-				_0: drum,
-				_1: {ctor: '[]'}
-			});
-	});
 var _user$project$Main$getDrumKeyCode = function (drum) {
 	return drum.keyCode;
 };
@@ -9038,12 +9027,23 @@ var _user$project$Main$drumForKeyCode = function (keyCode) {
 			return _elm_lang$core$Native_Utils.crashCase(
 				'Main',
 				{
-					start: {line: 93, column: 5},
-					end: {line: 122, column: 47}
+					start: {line: 90, column: 5},
+					end: {line: 119, column: 44}
 				},
-				_p0)('Not a real drum dude');
+				_p0)('not a drum button');
 	}
 };
+var _user$project$Main$drumActivated = F2(
+	function (model, keyCode) {
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			model,
+			{
+				ctor: '::',
+				_0: _user$project$Main$drumForKeyCode(keyCode),
+				_1: {ctor: '[]'}
+			});
+	});
 var _user$project$Main$update = F2(
 	function (msg, model) {
 		var _p2 = msg;
@@ -9054,23 +9054,16 @@ var _user$project$Main$update = F2(
 				_p3,
 				_user$project$Main$keyCodesIn(model)) ? {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none} : {
 				ctor: '_Tuple2',
-				_0: A2(
-					_user$project$Main$drumActivated,
-					model,
-					_user$project$Main$drumForKeyCode(_p3)),
+				_0: A2(_user$project$Main$drumActivated, model, _p3),
 				_1: _user$project$Main$playMp3(
 					_user$project$Main$drumForKeyCode(_p3).mp3Name)
 			};
 		} else {
-			var _p4 = _p2._0;
-			return A2(
-				_elm_lang$core$List$member,
-				_p4,
-				_user$project$Main$keyCodesIn(model)) ? {
+			return {
 				ctor: '_Tuple2',
-				_0: A2(_user$project$Main$drumDeactivated, model, _p4),
+				_0: A2(_user$project$Main$drumDeactivated, model, _p2._0),
 				_1: _elm_lang$core$Platform_Cmd$none
-			} : {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+			};
 		}
 	});
 var _user$project$Main$view = function (model) {
