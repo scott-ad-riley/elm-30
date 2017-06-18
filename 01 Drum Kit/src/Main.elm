@@ -62,7 +62,7 @@ update msg model =
                 NotADrum ->
                     ( model, Cmd.none )
 
-                Drum keyCode letter mp3Name ->
+                Drum keyCode _ mp3Name ->
                     if keyAlreadyPressed keyCode model then
                         ( model, Cmd.none )
                     else
@@ -73,7 +73,7 @@ update msg model =
                 NotADrum ->
                     ( model, Cmd.none )
 
-                Drum keyCode letter mp3Name ->
+                Drum keyCode _ _ ->
                     if keyAlreadyPressed keyCode model then
                         ( drumDeactivated model keyCode, Cmd.none )
                     else
@@ -100,7 +100,7 @@ getDrumKeyCode drum =
         NotADrum ->
             0
 
-        Drum keyCode letter mp3Name ->
+        Drum keyCode _ _ ->
             keyCode
 
 
@@ -114,7 +114,7 @@ drumActivated model keyCode =
             NotADrum ->
                 model
 
-            Drum keyCode letter mp3Name ->
+            Drum _ _ _ ->
                 model ++ [ drum ]
 
 
@@ -129,7 +129,7 @@ doesNotMatch drum targetKeyCode =
         NotADrum ->
             False
 
-        Drum keyCode letter mp3Name ->
+        Drum keyCode _ _ ->
             targetKeyCode /= keyCode
 
 
