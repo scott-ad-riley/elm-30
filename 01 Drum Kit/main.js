@@ -8924,73 +8924,101 @@ var _user$project$Main$dataKey = function (key) {
 };
 var _user$project$Main$drumBox = F2(
 	function (drum, drumNumbers) {
-		return A2(
-			_elm_lang$html$Html$div,
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$classList(
-					{
-						ctor: '::',
-						_0: {ctor: '_Tuple2', _0: 'key', _1: true},
-						_1: {
-							ctor: '::',
-							_0: {
-								ctor: '_Tuple2',
-								_0: 'playing',
-								_1: A2(_elm_lang$core$List$member, drum.keyCode, drumNumbers)
-							},
-							_1: {ctor: '[]'}
-						}
-					}),
-				_1: {
+		var _p0 = drum;
+		if (_p0.ctor === 'NotADrum') {
+			return A2(
+				_elm_lang$html$Html$span,
+				{ctor: '[]'},
+				{ctor: '[]'});
+		} else {
+			var _p1 = _p0._0;
+			return A2(
+				_elm_lang$html$Html$div,
+				{
 					ctor: '::',
-					_0: _user$project$Main$dataKey(drum.keyCode),
-					_1: {ctor: '[]'}
-				}
-			},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$kbd,
-					{ctor: '[]'},
-					{
+					_0: _elm_lang$html$Html_Attributes$classList(
+						{
+							ctor: '::',
+							_0: {ctor: '_Tuple2', _0: 'key', _1: true},
+							_1: {
+								ctor: '::',
+								_0: {
+									ctor: '_Tuple2',
+									_0: 'playing',
+									_1: A2(_elm_lang$core$List$member, _p1, drumNumbers)
+								},
+								_1: {ctor: '[]'}
+							}
+						}),
+					_1: {
 						ctor: '::',
-						_0: _elm_lang$html$Html$text(drum.letter),
+						_0: _user$project$Main$dataKey(_p1),
 						_1: {ctor: '[]'}
-					}),
-				_1: {
+					}
+				},
+				{
 					ctor: '::',
 					_0: A2(
-						_elm_lang$html$Html$span,
+						_elm_lang$html$Html$kbd,
+						{ctor: '[]'},
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$class('sound'),
-							_1: {ctor: '[]'}
-						},
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html$text(drum.mp3Name),
+							_0: _elm_lang$html$Html$text(_p0._1),
 							_1: {ctor: '[]'}
 						}),
-					_1: {ctor: '[]'}
-				}
-			});
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$span,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('sound'),
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text(_p0._2),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				});
+		}
+	});
+var _user$project$Main$doesNotMatch = F2(
+	function (drum, targetKeyCode) {
+		var _p2 = drum;
+		if (_p2.ctor === 'NotADrum') {
+			return false;
+		} else {
+			return !_elm_lang$core$Native_Utils.eq(targetKeyCode, _p2._0);
+		}
 	});
 var _user$project$Main$drumDeactivated = F2(
 	function (model, keyCode) {
 		return A2(
 			_elm_lang$core$List$filter,
-			function (el) {
-				return !_elm_lang$core$Native_Utils.eq(el.keyCode, keyCode);
+			function (d) {
+				return A2(_user$project$Main$doesNotMatch, d, keyCode);
 			},
 			model);
 	});
 var _user$project$Main$getDrumKeyCode = function (drum) {
-	return drum.keyCode;
+	var _p3 = drum;
+	if (_p3.ctor === 'NotADrum') {
+		return 0;
+	} else {
+		return _p3._0;
+	}
 };
 var _user$project$Main$keyCodesIn = function (model) {
 	return A2(_elm_lang$core$List$map, _user$project$Main$getDrumKeyCode, model);
 };
+var _user$project$Main$keyAlreadyPressed = F2(
+	function (keyCode, model) {
+		var modelKeyCodes = _user$project$Main$keyCodesIn(model);
+		return A2(_elm_lang$core$List$member, keyCode, modelKeyCodes);
+	});
 var _user$project$Main$initialModel = {ctor: '[]'};
 var _user$project$Main$init = {ctor: '_Tuple2', _0: _user$project$Main$initialModel, _1: _elm_lang$core$Platform_Cmd$none};
 var _user$project$Main$playMp3 = _elm_lang$core$Native_Platform.outgoingPort(
@@ -8998,13 +9026,14 @@ var _user$project$Main$playMp3 = _elm_lang$core$Native_Platform.outgoingPort(
 	function (v) {
 		return v;
 	});
+var _user$project$Main$NotADrum = {ctor: 'NotADrum'};
 var _user$project$Main$Drum = F3(
 	function (a, b, c) {
-		return {keyCode: a, letter: b, mp3Name: c};
+		return {ctor: 'Drum', _0: a, _1: b, _2: c};
 	});
 var _user$project$Main$drumForKeyCode = function (keyCode) {
-	var _p0 = keyCode;
-	switch (_p0) {
+	var _p4 = keyCode;
+	switch (_p4) {
 		case 65:
 			return A3(_user$project$Main$Drum, 65, 'A', 'clap');
 		case 83:
@@ -9024,46 +9053,53 @@ var _user$project$Main$drumForKeyCode = function (keyCode) {
 		case 76:
 			return A3(_user$project$Main$Drum, 76, 'L', 'tink');
 		default:
-			return _elm_lang$core$Native_Utils.crashCase(
-				'Main',
-				{
-					start: {line: 90, column: 5},
-					end: {line: 119, column: 44}
-				},
-				_p0)('not a drum button');
+			return _user$project$Main$NotADrum;
 	}
 };
 var _user$project$Main$drumActivated = F2(
 	function (model, keyCode) {
-		return A2(
-			_elm_lang$core$Basics_ops['++'],
-			model,
-			{
-				ctor: '::',
-				_0: _user$project$Main$drumForKeyCode(keyCode),
-				_1: {ctor: '[]'}
-			});
+		var drum = _user$project$Main$drumForKeyCode(keyCode);
+		var _p5 = drum;
+		if (_p5.ctor === 'NotADrum') {
+			return model;
+		} else {
+			return A2(
+				_elm_lang$core$Basics_ops['++'],
+				model,
+				{
+					ctor: '::',
+					_0: drum,
+					_1: {ctor: '[]'}
+				});
+		}
 	});
 var _user$project$Main$update = F2(
 	function (msg, model) {
-		var _p2 = msg;
-		if (_p2.ctor === 'KeyDown') {
-			var _p3 = _p2._0;
-			return A2(
-				_elm_lang$core$List$member,
-				_p3,
-				_user$project$Main$keyCodesIn(model)) ? {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none} : {
-				ctor: '_Tuple2',
-				_0: A2(_user$project$Main$drumActivated, model, _p3),
-				_1: _user$project$Main$playMp3(
-					_user$project$Main$drumForKeyCode(_p3).mp3Name)
-			};
+		var _p6 = msg;
+		if (_p6.ctor === 'KeyDown') {
+			var _p7 = _user$project$Main$drumForKeyCode(_p6._0);
+			if (_p7.ctor === 'NotADrum') {
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+			} else {
+				var _p8 = _p7._0;
+				return A2(_user$project$Main$keyAlreadyPressed, _p8, model) ? {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none} : {
+					ctor: '_Tuple2',
+					_0: A2(_user$project$Main$drumActivated, model, _p8),
+					_1: _user$project$Main$playMp3(_p7._2)
+				};
+			}
 		} else {
-			return {
-				ctor: '_Tuple2',
-				_0: A2(_user$project$Main$drumDeactivated, model, _p2._0),
-				_1: _elm_lang$core$Platform_Cmd$none
-			};
+			var _p9 = _user$project$Main$drumForKeyCode(_p6._0);
+			if (_p9.ctor === 'NotADrum') {
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+			} else {
+				var _p10 = _p9._0;
+				return A2(_user$project$Main$keyAlreadyPressed, _p10, model) ? {
+					ctor: '_Tuple2',
+					_0: A2(_user$project$Main$drumDeactivated, model, _p10),
+					_1: _elm_lang$core$Platform_Cmd$none
+				} : {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+			}
 		}
 	});
 var _user$project$Main$view = function (model) {

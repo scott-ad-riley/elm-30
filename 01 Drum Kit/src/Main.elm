@@ -15,21 +15,31 @@ main =
         }
 
 
-type alias Drum =
-    { keyCode : Keyboard.KeyCode
-    , letter : String
-    , mp3Name : String
-    }
+type alias Letter =
+    String
+
+
+type alias MP3Name =
+    String
+
+
+type alias KeyCode =
+    Keyboard.KeyCode
+
+
+type MaybeDrum
+    = Drum KeyCode Letter MP3Name
+    | NotADrum
 
 
 type alias Model =
-    List Drum
+    List MaybeDrum
 
 
 port playMp3 : String -> Cmd msg
 
 
-initialModel : List Drum
+initialModel : List MaybeDrum
 initialModel =
     []
 
@@ -48,33 +58,79 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         KeyDown keyCode ->
-            if List.member keyCode (keyCodesIn model) then
-                ( model, Cmd.none )
-            else
-                ( drumActivated model keyCode, playMp3 (drumForKeyCode keyCode).mp3Name )
+            case (drumForKeyCode keyCode) of
+                NotADrum ->
+                    ( model, Cmd.none )
+
+                Drum keyCode letter mp3Name ->
+                    if keyAlreadyPressed keyCode model then
+                        ( model, Cmd.none )
+                    else
+                        ( drumActivated model keyCode, playMp3 mp3Name )
 
         KeyUp keyCode ->
-            ( drumDeactivated model keyCode, Cmd.none )
+            case (drumForKeyCode keyCode) of
+                NotADrum ->
+                    ( model, Cmd.none )
+
+                Drum keyCode letter mp3Name ->
+                    if keyAlreadyPressed keyCode model then
+                        ( drumDeactivated model keyCode, Cmd.none )
+                    else
+                        ( model, Cmd.none )
 
 
-keyCodesIn : List Drum -> List Keyboard.KeyCode
+keyAlreadyPressed : Keyboard.KeyCode -> Model -> Bool
+keyAlreadyPressed keyCode model =
+    let
+        modelKeyCodes =
+            keyCodesIn model
+    in
+        List.member keyCode modelKeyCodes
+
+
+keyCodesIn : List MaybeDrum -> List Keyboard.KeyCode
 keyCodesIn model =
     List.map getDrumKeyCode model
 
 
-getDrumKeyCode : Drum -> Keyboard.KeyCode
+getDrumKeyCode : MaybeDrum -> Keyboard.KeyCode
 getDrumKeyCode drum =
-    drum.keyCode
+    case drum of
+        NotADrum ->
+            0
+
+        Drum keyCode letter mp3Name ->
+            keyCode
 
 
-drumActivated : List Drum -> Keyboard.KeyCode -> List Drum
+drumActivated : List MaybeDrum -> Keyboard.KeyCode -> List MaybeDrum
 drumActivated model keyCode =
-    model ++ [ drumForKeyCode keyCode ]
+    let
+        drum =
+            drumForKeyCode keyCode
+    in
+        case drum of
+            NotADrum ->
+                model
+
+            Drum keyCode letter mp3Name ->
+                model ++ [ drum ]
 
 
-drumDeactivated : List Drum -> Keyboard.KeyCode -> List Drum
+drumDeactivated : List MaybeDrum -> Keyboard.KeyCode -> List MaybeDrum
 drumDeactivated model keyCode =
-    List.filter (\el -> el.keyCode /= keyCode) model
+    List.filter (\d -> doesNotMatch d keyCode) model
+
+
+doesNotMatch : MaybeDrum -> Keyboard.KeyCode -> Bool
+doesNotMatch drum targetKeyCode =
+    case drum of
+        NotADrum ->
+            False
+
+        Drum keyCode letter mp3Name ->
+            targetKeyCode /= keyCode
 
 
 subscriptions : Model -> Sub Msg
@@ -85,7 +141,7 @@ subscriptions model =
         ]
 
 
-drumForKeyCode : Keyboard.KeyCode -> Drum
+drumForKeyCode : Keyboard.KeyCode -> MaybeDrum
 drumForKeyCode keyCode =
     case keyCode of
         65 ->
@@ -116,7 +172,7 @@ drumForKeyCode keyCode =
             Drum 76 "L" "tink"
 
         _ ->
-            Debug.crash "not a drum button"
+            NotADrum
 
 
 view : Model -> Html Msg
@@ -138,14 +194,19 @@ view model =
             ]
 
 
-drumBox : Drum -> List Keyboard.KeyCode -> Html msg
+drumBox : MaybeDrum -> List Keyboard.KeyCode -> Html msg
 drumBox drum drumNumbers =
-    div [ classList [ ( "key", True ), ( "playing", List.member drum.keyCode drumNumbers ) ], dataKey drum.keyCode ]
-        [ kbd []
-            [ text drum.letter ]
-        , span [ class "sound" ]
-            [ text drum.mp3Name ]
-        ]
+    case drum of
+        NotADrum ->
+            span [] []
+
+        Drum keyCode letter mp3Name ->
+            div [ classList [ ( "key", True ), ( "playing", List.member keyCode drumNumbers ) ], dataKey keyCode ]
+                [ kbd []
+                    [ text letter ]
+                , span [ class "sound" ]
+                    [ text mp3Name ]
+                ]
 
 
 dataKey : Int -> Attribute msg
