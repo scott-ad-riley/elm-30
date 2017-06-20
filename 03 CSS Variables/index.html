@@ -10,17 +10,45 @@
 
   <div id="elm"></div>
   <script type="text/javascript">
-    var elmElement = document.getElementById('elm')
-    var app = Elm.Main.embed(elmElement)
+    var app = Elm.Main.embed(document.getElementById('elm'))
+
+    app.ports.spacing.subscribe(function (newSpacing) {
+      setProp('--spacing', newSpacing);
+    })
+
+    app.ports.blur.subscribe(function (newBlur) {
+      setProp('--blur', newBlur);
+    })
+
+    app.ports.colour.subscribe(function (newColour) {
+      setProp('--colour', newColour);
+    })
+
+    function setProp(key, value) {
+      document.documentElement.style.setProperty(key, value)
+    }
   </script>
 
   <img src="https://source.unsplash.com/7bwQXzbF6KE/800x500">
 
   <style>
 
-    /*
-      misc styles, nothing to do with CSS variables
-    */
+    :root {
+      --spacing: 10px;
+      --blur: 10px;
+      --colour: #ffc600;
+    }
+
+    img {
+      padding: var(--spacing);
+      filter: blur(var(--blur));
+      background: var(--colour);
+    }
+
+    .hl {
+      color: var(--base);
+    }
+
 
     body {
       text-align: center;
