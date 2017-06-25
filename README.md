@@ -52,3 +52,5 @@ sortedByLastName : List Inventor -> List Inventor
 sortedByLastName inventors =
     List.sortBy .last inventors
 ```
+
+I've also added an additional commit for this exercise to show the refactoring of the last example to use a union type. It feels more verbose and definitely overkill for the exercise - but if the code had begun to grow I think it does make a lot more sense.

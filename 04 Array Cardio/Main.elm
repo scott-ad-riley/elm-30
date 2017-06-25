@@ -128,8 +128,18 @@ sortedByLastName inventors =
 -- Sum up the instances of each of these
 
 
-type alias Vehicle =
-    String
+vehicles : List Vehicle
+vehicles =
+    asVehicleTypes [ "car", "car", "truck", "truck", "bike", "walk", "car", "van", "bike", "walk", "car", "van", "car", "truck" ]
+
+
+type Vehicle
+    = Car
+    | Truck
+    | Bike
+    | Van
+    | Walk
+    | NotAVehicle
 
 
 type alias VehicleSum =
@@ -141,9 +151,31 @@ type alias VehicleSum =
     }
 
 
-vehicles : List Vehicle
-vehicles =
-    [ "car", "car", "truck", "truck", "bike", "walk", "car", "van", "bike", "walk", "car", "van", "car", "truck" ]
+asVehicleTypes : List String -> List Vehicle
+asVehicleTypes vehicleStrings =
+    List.map toVehicle vehicleStrings
+
+
+toVehicle : String -> Vehicle
+toVehicle vehicleString =
+    case vehicleString of
+        "car" ->
+            Car
+
+        "truck" ->
+            Truck
+
+        "bike" ->
+            Bike
+
+        "van" ->
+            Van
+
+        "walk" ->
+            Walk
+
+        _ ->
+            NotAVehicle
 
 
 sumOfEachType : List Vehicle -> VehicleSum
@@ -164,22 +196,22 @@ initialSum =
 addToCounter : Vehicle -> VehicleSum -> VehicleSum
 addToCounter vehicle vehicleSum =
     case vehicle of
-        "car" ->
+        Car ->
             { vehicleSum | car = vehicleSum.car + 1 }
 
-        "truck" ->
+        Truck ->
             { vehicleSum | truck = vehicleSum.truck + 1 }
 
-        "bike" ->
+        Bike ->
             { vehicleSum | bike = vehicleSum.bike + 1 }
 
-        "van" ->
+        Van ->
             { vehicleSum | van = vehicleSum.van + 1 }
 
-        "walk" ->
+        Walk ->
             { vehicleSum | walk = vehicleSum.walk + 1 }
 
-        _ ->
+        NotAVehicle ->
             vehicleSum
 
 
