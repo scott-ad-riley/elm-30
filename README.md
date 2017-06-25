@@ -31,3 +31,24 @@ Another hiccup (mostly avoided by having an exmaple to follow in the elm guide) 
 This one's probably been the easiest so far, but also the most frustrating. [The most widely used elm library](https://github.com/rtfeldman/elm-css) for css has two functionalities - one to have dynamic styles on elements inside your `view` and the other to actually generate static stylesheets (the latter is presumably because it'll do type checking on all your values). It does also allow you to set pseudo elements (i.e. `:root` for your css variables), but not inline (i.e. inside your view function) ([see note here](https://github.com/rtfeldman/elm-css/blob/master/README.md#approach-1-inline-styles)).
 
 Unfortunately because of this we've had to use ports again like in the first example - though to be honest whilst they're supposed to be "the devil"/"an antipattern" they haven't felt that weird, maybe because they're so thin on the js side ¯\\\_(ツ)\_/¯
+
+
+## 04 - Array Cardio
+
+No Link for this one - the code's been commented with solutions
+
+For #6 I got the information out of the page using a pretty horrible chained DOM lookup. (Wes' videos and example have a better explanation for it).
+
+The benefits of elm aren't the same ones i've been used to - but the elegance of syntax and useability of types becomes clear very quickly.
+
+One notable benefit is the record-access syntax being available as a function. So the following two are actually entirely equal:
+* `inventorBirthDate inventor = inventor.birthDate`
+* `.birthDate`
+
+This means we can use `List.sortBy` to do this super-easily:
+
+```
+sortedByLastName : List Inventor -> List Inventor
+sortedByLastName inventors =
+    List.sortBy .last inventors
+```
