@@ -54,3 +54,29 @@ sortedByLastName inventors =
 ```
 
 I've also added an additional commit for this exercise to show the refactoring of the last example to use a union type. It feels more verbose and definitely overkill for the exercise - but if the code had begun to grow I think it does make a lot more sense.
+
+## 05 - Flex Panel Gallery
+
+No Link - I skipped this exercise
+
+The javascript was incredibly basic and it was more focused on CSS (toggling classes to apply different transitions with flex-box and font size).
+
+I may come back to it at some point - it does hook in to the `onTransitionEnd` event which could be interesting in elm.
+
+## 06 - Type Ahead
+
+[Link](https://harsh-base.surge.sh)
+
+This was great fun - finally something a more realistic.
+
+It's loading in via ajax a list of cities, then allowing you to type in the box to filter them by city/state (not entirely clear from the UI).
+
+There are a few areas that were pretty interesting to build - the ajax/http part I had expected to be the most difficult but it's actually not that bad.
+
+* The JSON Decoder took a while to understand but I love the composability of them.
+
+* Pulling out the view helper functions so i can write `display .name` and the helper will handle getting the value out and creating the html.
+
+* Similar to the last point, one function (with 2 helpers) to accept a list of city records and a search string and return the filtered records, and it's just a few lines long is pretty awesome.
+
+Highlight functions: `filterCities`, `cityView`, `decodeCities`
