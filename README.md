@@ -80,3 +80,11 @@ There are a few areas that were pretty interesting to build - the ajax/http part
 * Similar to the last point, one function (with 2 helpers) to accept a list of city records and a search string and return the filtered records, and it's just a few lines long is pretty awesome.
 
 Highlight functions: `filterCities`, `cityView`, `decodeCities`
+
+## 07 Array Cardio
+
+No Link (similar to last array cardio - code is commented)
+
+Finding an element by it's id. Elm's not going to let me just return "undefined" if it can't find it - I have to return _something_. So we wrap it in a `Maybe Comment` and then when it returns and does find it the type's actually `Just Comment`, if it couldn't find it, it would return `Nothing`. If I had a model or some other code using the output of that find, i'd have to handle that `Maybe`. So it's a union type: `type Maybe = Just <YourType> | Nothing`, makes sense but does add some overhead. I could have implemented with recursion but didn't really see the benefit.
+
+These aren't particularly tricky in elm - especially when you don't have a view (or you're just `toString`ing your result).
