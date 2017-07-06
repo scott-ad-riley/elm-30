@@ -88,3 +88,17 @@ No Link (similar to last array cardio - code is commented)
 Finding an element by it's id. Elm's not going to let me just return "undefined" if it can't find it - I have to return _something_. So we wrap it in a `Maybe Comment` and then when it returns and does find it the type's actually `Just Comment`, if it couldn't find it, it would return `Nothing`. If I had a model or some other code using the output of that find, i'd have to handle that `Maybe`. So it's a union type: `type Maybe = Just <YourType> | Nothing`, makes sense but does add some overhead. I could have implemented with recursion but didn't really see the benefit.
 
 These aren't particularly tricky in elm - especially when you don't have a view (or you're just `toString`ing your result).
+
+## 08 HTML5 Canvas
+
+[Link](http://sable-competition.surge.sh/)
+
+This was a bunch of fun - though not something i'd recommend using for elm. The code's a bit of a mess in it's current state but some notable parts included:
+
+* Decoding events other than `click` to capture the mouse X and Y was pretty tricky (particularly around using the type system).
+* Elm-Graphics (or `Collage`) uses a coordinate system with an origin in the center of the area - whereas javascript canvas and the browser origin is in the top left - this meant figuring out how to convert between the two which was pretty interesting.
+* Performance - we're holding every single line that we draw inside of the model/store which means it starts to feel quite sluggish after quite a lot of drawing. I'm not sure of a way around this (in javascript we just get to mutate/write to a `context` and then we're responsible for clearing something later). In Elm we have the entire state of the canvas held in our model.
+* The graphics library is really nice to use. It feels "elm-y" whilst still allowing you to use a canvas. If I had one or two objects that i was moving around rather than drawing repeatedly I think it would've been more appropriate to use it.
+* I also grabbed some initialization values from javascript using Flags as well to see how that behaved - was very easy to implement.
+
+I also left in (but commented out) my debug code that I used when translating the coordinate system - see `modelInfo` and `pathInfo`.
