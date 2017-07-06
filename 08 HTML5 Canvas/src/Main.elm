@@ -9,9 +9,9 @@ import Collage exposing (..)
 import Element exposing (..)
 
 
-main : Program Never Model Msg
+main : Program Flags Model Msg
 main =
-    program
+    programWithFlags
         { init = init
         , view = view
         , update = update
@@ -19,19 +19,15 @@ main =
         }
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( initialModel, Cmd.none )
+type alias Flags =
+    { width : Float
+    , height : Float
+    }
 
 
-canvasHeight : Int
-canvasHeight =
-    600
-
-
-canvasWidth : Int
-canvasWidth =
-    800
+init : Flags -> ( Model, Cmd Msg )
+init flags =
+    ( initialModel flags, Cmd.none )
 
 
 type alias Model =
@@ -42,6 +38,8 @@ type alias Model =
     , currentWidth : Float
     , currentColour : Float
     , widthIncreasing : Bool
+    , screenWidth : Float
+    , screenHeight : Float
     }
 
 
@@ -61,8 +59,8 @@ type alias Line =
     }
 
 
-initialModel : Model
-initialModel =
+initialModel : Flags -> Model
+initialModel { width, height } =
     { lastX = 0.0
     , lastY = 0.0
     , isDrawing = False
@@ -70,6 +68,8 @@ initialModel =
     , currentWidth = 20.0
     , widthIncreasing = True
     , currentColour = 0.0
+    , screenWidth = width
+    , screenHeight = height
     }
 
 
@@ -96,7 +96,7 @@ update msg model =
         shouldIncreaseWidth =
             if (model.widthIncreasing && model.currentWidth >= 100.0) then
                 False
-            else if (not model.widthIncreasing && model.currentWidth <= 5.0) then
+            else if (not model.widthIncreasing && model.currentWidth <= 15.0) then
                 True
             else
                 model.widthIncreasing
@@ -141,30 +141,30 @@ update msg model =
 
 createLine : Model -> Point -> List Line
 createLine model point =
-    [ { startX = (convertX model.lastX)
-      , startY = (convertY model.lastY)
-      , endX = (convertX point.x)
-      , endY = (convertY point.y)
+    [ { startX = (convertX model.lastX model.screenWidth)
+      , startY = (convertY model.lastY model.screenHeight)
+      , endX = (convertX point.x model.screenWidth)
+      , endY = (convertY point.y model.screenHeight)
       , colour = model.currentColour
       , width = model.currentWidth
       }
     ]
 
 
-convertX : Float -> Float
-convertX coordinate =
+convertX : Float -> Float -> Float
+convertX coordinate screenWidth =
     let
         width =
-            (toFloat canvasWidth) / 2
+            screenWidth / 2
     in
         coordinate - width
 
 
-convertY : Float -> Float
-convertY coordinate =
+convertY : Float -> Float -> Float
+convertY coordinate screenHeight =
     let
         height =
-            (toFloat canvasHeight) / 2
+            screenHeight / 2
     in
         if coordinate < height then
             height - coordinate
@@ -175,11 +175,10 @@ convertY coordinate =
 view : Model -> Html Msg
 view model =
     div
-        [ style [ ( "background-color", "#0f0" ) ], handleMouseDown, handleMouseUp, handleMouseMove ]
+        [ style [ ( "background-color", "#eee" ) ], handleMouseDown, handleMouseUp, handleMouseMove ]
         [ canvas model
-
-        -- , modelInfo model
-        -- , pathsInfo model.lines
+          -- , modelInfo model
+          -- , pathsInfo model.lines
         ]
 
 
@@ -222,8 +221,14 @@ canvas model =
 
         lineToPath line =
             traced (lineStyling line) (segment ( line.startX, line.startY ) ( line.endX, line.endY ))
+
+        width =
+            round model.screenWidth
+
+        height =
+            round model.screenHeight
     in
-        collage canvasWidth canvasHeight modelPaths |> toHtml
+        collage width height modelPaths |> toHtml
 
 
 modelInfo : Model -> Html msg
