@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>10 Shift Click Checkboxes</title>
+  <script src="/main.js" type="text/javascript"></script>
+</head>
+<body>
+  <style>
+    html {
+      font-family: sans-serif;
+      background:#ffc600;
+    }
+    
+    .inbox {
+      max-width:400px;
+      margin:50px auto;
+      background:white;
+      border-radius:5px;
+      box-shadow:10px 10px 0 rgba(0,0,0,0.1);
+    }
+    
+    .item {
+      display:flex;
+      align-items:center;
+      border-bottom: 1px solid #F1F1F1;
+    }
+   
+    .item:last-child {
+      border-bottom:0;
+    }
+    
+    input:checked + p {
+      background:#F9F9F9;
+      text-decoration: line-through;
+    }
+   
+    input[type="checkbox"] {
+      margin:20px;
+    }
+   
+    p {
+      margin:0;
+      padding:20px;
+      transition:background 0.2s;
+      flex:1;
+      font-family:'helvetica neue';
+      font-size: 20px;
+      font-weight: 200;
+      border-left: 1px solid #D1E2FF;
+    }
+  </style>
+  <script>var app = Elm.Main.fullscreen()</script>
+
+</body>
+</html>
