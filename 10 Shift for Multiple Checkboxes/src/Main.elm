@@ -1,24 +1,18 @@
-module Main exposing (..)
+module Main exposing (Box(..), Model, Msg(..), checkBoxView, init, initialModel, main, update, view)
 
+import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode exposing (..)
 
 
-main : Program Never Model Msg
 main =
-    program
+    Browser.sandbox
         { init = init
         , view = view
         , update = update
-        , subscriptions = subscriptions
         }
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none
 
 
 init : ( Model, Cmd Msg )
@@ -28,20 +22,23 @@ init =
 
 initialModel : Model
 initialModel =
-    [ Unchecked "This is an inbox layout."
-    , Unchecked "Check one item"
-    , Unchecked "Hold down your Shift key"
-    , Unchecked "Check a lower item"
-    , Unchecked "Everything inbetween should also be set to checked"
-    , Unchecked "Try do it with out any libraries"
-    , Unchecked "Just regular JavaScript"
-    , Unchecked "Good Luck!"
-    , Unchecked "Don't forget to tweet your result!"
-    ]
+    { checkMultiple = False
+    , boxes =
+        [ Unchecked "This is an inbox layout."
+        , Unchecked "Check one item"
+        , Unchecked "Hold down your Shift key"
+        , Unchecked "Check a lower item"
+        , Unchecked "Everything inbetween should also be set to checked"
+        , Unchecked "Try do it with out any libraries"
+        , Unchecked "Just regular JavaScript"
+        , Unchecked "Good Luck!"
+        , Unchecked "Don't forget to tweet your result!"
+        ]
+    }
 
 
 type alias Model =
-    List Box
+    { boxes : List Box, checkMultiple : Bool }
 
 
 type Box
@@ -50,38 +47,73 @@ type Box
 
 
 type Msg
-    = CheckBox String
-    | UncheckBox String
+    = BoxClicked String Bool
     | KeyDown
     | KeyUp
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+flipBoxAt : String -> Bool -> List Box -> List Box
+flipBoxAt name isChecked list =
+    List.map (flipBox name isChecked) list
+
+
+flipBox : String -> Bool -> Box -> Box
+flipBox flippedName isChecked box =
     let
-        checkABox clickedBoxText =
-            model
+        handleBox name =
+            case name == flippedName of
+                True ->
+                    newBox
 
-        unCheckABox clickedBoxText =
-            model
+                False ->
+                    box
+
+        newBox =
+            case isChecked of
+                True ->
+                    Checked flippedName
+
+                False ->
+                    Unchecked flippedName
     in
-        case msg of
-            CheckBox value ->
-                ( checkABox value, Cmd.none )
+    case box of
+        Checked name ->
+            handleBox name
 
-            UncheckBox value ->
-                ( unCheckABox value, Cmd.none )
-
-            KeyUp ->
-                ( model, Cmd.none )
-
-            KeyDown ->
-                ( model, Cmd.none )
+        Unchecked name ->
+            handleBox name
 
 
-view : Model -> Html Msg
-view model =
-    div [ class "inbox" ] (List.map checkBoxView model)
+checkABox : Model -> String -> Bool -> Model
+checkABox { boxes, checkMultiple } name isChecked =
+    let
+        return updatedBoxList =
+            { boxes = updatedBoxList, checkMultiple = checkMultiple }
+    in
+    case checkMultiple of
+        True ->
+            return boxes
+
+        False ->
+            return (flipBoxAt name isChecked boxes)
+
+
+update : Msg -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+update msg ( model, cmd ) =
+    case msg of
+        BoxClicked value isChecked ->
+            ( checkABox model value isChecked, cmd )
+
+        KeyUp ->
+            ( { model | checkMultiple = False }, cmd )
+
+        KeyDown ->
+            ( { model | checkMultiple = True }, cmd )
+
+
+view : ( Model, Cmd Msg ) -> Html Msg
+view ( { boxes }, cmd ) =
+    div [ class "inbox" ] (List.map checkBoxView boxes)
 
 
 checkBoxView : Box -> Html Msg
@@ -90,27 +122,22 @@ checkBoxView box =
         format value =
             String.words value |> String.join "-"
     in
-        case box of
-            Checked value ->
-                div [ class "item" ]
-                    [ input [ type_ "checkbox", id (format value), setChangeHandler, checked True ] []
-                    , p []
-                        [ label [ for (format value) ] [ text value ] ]
-                    ]
+    case box of
+        Checked boxName ->
+            div [ class "item" ]
+                [ input [ type_ "checkbox", id (format boxName), setChangeHandler boxName, checked True ] []
+                , p []
+                    [ label [ for (format boxName) ] [ text boxName ] ]
+                ]
 
-            Unchecked value ->
-                div [ class "item" ]
-                    [ input [ type_ "checkbox", id (format value), setChangeHandler, checked False ] []
-                    , p []
-                        [ label [ for (format value) ] [ text value ] ]
-                    ]
-
-
-setChangeHandler : Attribute msg
-setChangeHandler =
-    on "change" (checkboxDecoder)
+        Unchecked boxName ->
+            div [ class "item" ]
+                [ input [ type_ "checkbox", id (format boxName), setChangeHandler boxName, checked False ] []
+                , p []
+                    [ label [ for (format boxName) ] [ text boxName ] ]
+                ]
 
 
-checkboxDecoder : Json.Decode.Decoder String
-checkboxDecoder =
-    Json.Decode.at [ "string" ] string
+setChangeHandler : String -> Attribute Msg
+setChangeHandler name =
+    onCheck (\isChecked -> BoxClicked name isChecked)
