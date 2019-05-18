@@ -63,12 +63,11 @@ flipBoxAt name isChecked list =
 
 flipBox : String -> Bool -> Box -> Box
 flipBox flippedName isChecked box =
-    case box.name == flippedName of
-        True ->
-            makeBox isChecked flippedName
+    if box.name == flippedName then
+        makeBox isChecked flippedName
 
-        False ->
-            box
+    else
+        box
 
 
 checkABox : Model -> String -> Bool -> Model
