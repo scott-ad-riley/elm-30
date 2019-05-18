@@ -1,4 +1,4 @@
-module Main exposing (Box(..), Model, Msg(..), checkBoxView, init, initialModel, main, update, view)
+module Main exposing (Model, Msg(..), checkBoxView, init, initialModel, main, update, view)
 
 import Browser
 import Html exposing (..)
@@ -24,15 +24,15 @@ initialModel : Model
 initialModel =
     { checkMultiple = False
     , boxes =
-        [ Unchecked "This is an inbox layout."
-        , Unchecked "Check one item"
-        , Unchecked "Hold down your Shift key"
-        , Unchecked "Check a lower item"
-        , Unchecked "Everything inbetween should also be set to checked"
-        , Unchecked "Try do it with out any libraries"
-        , Unchecked "Just regular JavaScript"
-        , Unchecked "Good Luck!"
-        , Unchecked "Don't forget to tweet your result!"
+        [ makeBox False "This is an inbox layout."
+        , makeBox False "Check one item"
+        , makeBox False "Hold down your Shift key"
+        , makeBox False "Check a lower item"
+        , makeBox False "Everything inbetween should also be set to checked"
+        , makeBox False "Try do it with out any libraries"
+        , makeBox False "Just regular JavaScript"
+        , makeBox False "Good Luck!"
+        , makeBox False "Don't forget to tweet your result!"
         ]
     }
 
@@ -41,9 +41,13 @@ type alias Model =
     { boxes : List Box, checkMultiple : Bool }
 
 
-type Box
-    = Checked String
-    | Unchecked String
+type alias Box =
+    { checked : Bool, name : String }
+
+
+makeBox : Bool -> String -> Box
+makeBox isChecked name =
+    { checked = isChecked, name = name }
 
 
 type Msg
@@ -59,29 +63,12 @@ flipBoxAt name isChecked list =
 
 flipBox : String -> Bool -> Box -> Box
 flipBox flippedName isChecked box =
-    let
-        handleBox name =
-            case name == flippedName of
-                True ->
-                    newBox
+    case box.name == flippedName of
+        True ->
+            makeBox isChecked flippedName
 
-                False ->
-                    box
-
-        newBox =
-            case isChecked of
-                True ->
-                    Checked flippedName
-
-                False ->
-                    Unchecked flippedName
-    in
-    case box of
-        Checked name ->
-            handleBox name
-
-        Unchecked name ->
-            handleBox name
+        False ->
+            box
 
 
 checkABox : Model -> String -> Bool -> Model
@@ -119,23 +106,14 @@ view ( { boxes }, cmd ) =
 checkBoxView : Box -> Html Msg
 checkBoxView box =
     let
-        format value =
-            String.words value |> String.join "-"
+        formattedName =
+            String.words box.name |> String.join "-"
     in
-    case box of
-        Checked boxName ->
-            div [ class "item" ]
-                [ input [ type_ "checkbox", id (format boxName), setChangeHandler boxName, checked True ] []
-                , p []
-                    [ label [ for (format boxName) ] [ text boxName ] ]
-                ]
-
-        Unchecked boxName ->
-            div [ class "item" ]
-                [ input [ type_ "checkbox", id (format boxName), setChangeHandler boxName, checked False ] []
-                , p []
-                    [ label [ for (format boxName) ] [ text boxName ] ]
-                ]
+    div [ class "item" ]
+        [ input [ type_ "checkbox", id formattedName, setChangeHandler box.name, checked box.checked ] []
+        , p []
+            [ label [ for formattedName ] [ text box.name ] ]
+        ]
 
 
 setChangeHandler : String -> Attribute Msg
