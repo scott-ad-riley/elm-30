@@ -1,6 +1,7 @@
-module Main exposing (Model, Msg(..), checkBoxView, init, initialModel, main, update, view)
+module Main exposing (main)
 
 import Browser
+import Browser.Events
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -8,15 +9,16 @@ import Json.Decode exposing (..)
 
 
 main =
-    Browser.sandbox
+    Browser.element
         { init = init
-        , view = view
         , update = update
+        , view = view
+        , subscriptions = subscriptions
         }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : () -> ( Model, Cmd Msg )
+init _ =
     ( initialModel, Cmd.none )
 
 
@@ -37,6 +39,19 @@ initialModel =
     }
 
 
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.batch
+        [ Browser.Events.onKeyDown (Json.Decode.map (Change Down) keyDecoder)
+        , Browser.Events.onKeyUp (Json.Decode.map (Change Up) keyDecoder)
+        ]
+
+
+keyDecoder : Decoder String
+keyDecoder =
+    Json.Decode.field "key" Json.Decode.string
+
+
 type alias Model =
     { boxes : List Box, checkMultiple : Bool }
 
@@ -50,10 +65,14 @@ makeBox isChecked name =
     { checked = isChecked, name = name }
 
 
+type KeyStatus
+    = Up
+    | Down
+
+
 type Msg
     = BoxClicked String Bool
-    | KeyDown
-    | KeyUp
+    | Change KeyStatus String
 
 
 flipBoxAt : String -> Bool -> List Box -> List Box
@@ -84,21 +103,32 @@ checkABox { boxes, checkMultiple } name isChecked =
             return (flipBoxAt name isChecked boxes)
 
 
-update : Msg -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
-update msg ( model, cmd ) =
+updateCheckMultiple : KeyStatus -> String -> Model -> Model
+updateCheckMultiple status key model =
+    if key == "Shift" then
+        case status of
+            Up ->
+                { model | checkMultiple = False }
+
+            Down ->
+                { model | checkMultiple = True }
+
+    else
+        model
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
     case msg of
         BoxClicked value isChecked ->
-            ( checkABox model value isChecked, cmd )
+            ( checkABox model value isChecked, Cmd.none )
 
-        KeyUp ->
-            ( { model | checkMultiple = False }, cmd )
-
-        KeyDown ->
-            ( { model | checkMultiple = True }, cmd )
+        Change status key ->
+            ( updateCheckMultiple status key model, Cmd.none )
 
 
-view : ( Model, Cmd Msg ) -> Html Msg
-view ( { boxes }, cmd ) =
+view : Model -> Html Msg
+view { boxes } =
     div [ class "inbox" ] (List.map checkBoxView boxes)
 
 
