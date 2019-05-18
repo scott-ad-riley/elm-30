@@ -90,17 +90,17 @@ flipBox flippedName isChecked box =
 
 
 checkABox : Model -> String -> Bool -> Model
-checkABox { boxes, checkMultiple } name isChecked =
+checkABox model name isChecked =
     let
         return updatedBoxList =
-            { boxes = updatedBoxList, checkMultiple = checkMultiple }
+            { model | boxes = updatedBoxList }
     in
-    case checkMultiple of
+    case model.checkMultiple of
         True ->
-            return boxes
+            return model.boxes
 
         False ->
-            return (flipBoxAt name isChecked boxes)
+            return (flipBoxAt name isChecked model.boxes)
 
 
 updateCheckMultiple : KeyStatus -> String -> Model -> Model
