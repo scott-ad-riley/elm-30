@@ -36,6 +36,7 @@ initialModel =
         , makeBox False "Good Luck!"
         , makeBox False "Don't forget to tweet your result!"
         ]
+    , lastCheckedName = Nothing
     }
 
 
@@ -53,7 +54,7 @@ keyDecoder =
 
 
 type alias Model =
-    { boxes : List Box, checkMultiple : Bool }
+    { boxes : List Box, checkMultiple : Bool, lastCheckedName : Maybe String }
 
 
 type alias Box =
@@ -75,9 +76,24 @@ type Msg
     | Change KeyStatus String
 
 
-flipBoxAt : String -> Bool -> List Box -> List Box
-flipBoxAt name isChecked list =
-    List.map (flipBox name isChecked) list
+flipBoxAt : String -> Bool -> Model -> Model
+flipBoxAt name isChecked model =
+    let
+        newBoxList =
+            List.map (flipBox name isChecked) model.boxes
+
+        lastCheckedBox =
+            case List.filter (\eachBox -> eachBox.name == name) model.boxes of
+                [] ->
+                    Nothing
+
+                [ box ] ->
+                    Just box.name
+
+                _ ->
+                    Nothing
+    in
+    { model | boxes = newBoxList, lastCheckedName = lastCheckedBox }
 
 
 flipBox : String -> Bool -> Box -> Box
@@ -91,16 +107,12 @@ flipBox flippedName isChecked box =
 
 checkABox : Model -> String -> Bool -> Model
 checkABox model name isChecked =
-    let
-        return updatedBoxList =
-            { model | boxes = updatedBoxList }
-    in
     case model.checkMultiple of
         True ->
-            return model.boxes
+            model
 
         False ->
-            return (flipBoxAt name isChecked model.boxes)
+            flipBoxAt name isChecked model
 
 
 updateCheckMultiple : KeyStatus -> String -> Model -> Model
