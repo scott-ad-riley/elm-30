@@ -36,7 +36,7 @@ initialModel =
         , makeBox False "Good Luck!"
         , makeBox False "Don't forget to tweet your result!"
         ]
-    , lastCheckedName = Nothing
+    , lastCheckedIndex = Nothing
     }
 
 
@@ -54,7 +54,7 @@ keyDecoder =
 
 
 type alias Model =
-    { boxes : List Box, checkMultiple : Bool, lastCheckedName : Maybe String }
+    { boxes : List Box, checkMultiple : Bool, lastCheckedIndex : Maybe Int }
 
 
 type alias Box =
@@ -76,6 +76,15 @@ type Msg
     | Change KeyStatus String
 
 
+storeIndexIfMatch : String -> ( Int, Box ) -> Maybe Int -> Maybe Int
+storeIndexIfMatch name ( index, box ) current =
+    if box.name == name then
+        Just index
+
+    else
+        current
+
+
 flipBoxAt : String -> Bool -> Model -> Model
 flipBoxAt name isChecked model =
     let
@@ -83,17 +92,17 @@ flipBoxAt name isChecked model =
             List.map (flipBox name isChecked) model.boxes
 
         lastCheckedBox =
-            case List.filter (\eachBox -> eachBox.name == name) model.boxes of
-                [] ->
+            case isChecked of
+                False ->
                     Nothing
 
-                [ box ] ->
-                    Just box.name
-
-                _ ->
-                    Nothing
+                True ->
+                    List.indexedMap Tuple.pair model.boxes
+                        |> List.foldl
+                            (storeIndexIfMatch name)
+                            Nothing
     in
-    { model | boxes = newBoxList, lastCheckedName = lastCheckedBox }
+    { model | boxes = newBoxList, lastCheckedIndex = lastCheckedBox }
 
 
 flipBox : String -> Bool -> Box -> Box
@@ -105,11 +114,108 @@ flipBox flippedName isChecked box =
         box
 
 
+
+-- get the index of the box we ticked
+-- work out what indexes we need to check
+-- check each of those indexes
+-- ...
+
+
+type alias BoxName =
+    String
+
+
+type alias BoxIndex =
+    Int
+
+
+type CheckboxIteratorState
+    = SeenNeither BoxName BoxIndex
+    | SeenClicked BoxIndex
+    | SeenLastClicked BoxName
+    | SeenBoth
+
+
+type alias CheckboxAcc =
+    { state : CheckboxIteratorState, boxes : List Box }
+
+
+flipBoxThing : BoxName -> BoxIndex -> List Box -> Bool -> CheckboxAcc
+flipBoxThing name index list isChecked =
+    List.foldl (forEachBox isChecked) { state = SeenNeither name index, boxes = [] } (List.indexedMap Tuple.pair list)
+
+
+forEachBox : Bool -> ( BoxIndex, Box ) -> CheckboxAcc -> CheckboxAcc
+forEachBox isChecked ( boxIndex, box ) acc =
+    let
+        passThrough =
+            { acc | boxes = acc.boxes ++ [ box ] }
+
+        updateBox =
+            { acc | boxes = acc.boxes ++ [ makeBox isChecked box.name ] }
+
+        toState state nextAcc =
+            { nextAcc | state = state }
+    in
+    case acc.state of
+        SeenNeither name index ->
+            case ( name == box.name, index == boxIndex ) of
+                ( False, False ) ->
+                    passThrough
+
+                ( True, False ) ->
+                    updateBox |> toState (SeenClicked index)
+
+                ( False, True ) ->
+                    updateBox |> toState (SeenLastClicked name)
+
+                ( True, True ) ->
+                    updateBox |> toState SeenBoth
+
+        SeenBoth ->
+            passThrough
+
+        SeenClicked lastClickedIndex ->
+            case lastClickedIndex == boxIndex of
+                False ->
+                    updateBox
+
+                True ->
+                    updateBox |> toState SeenBoth
+
+        SeenLastClicked clickedName ->
+            case clickedName == box.name of
+                False ->
+                    updateBox
+
+                True ->
+                    updateBox |> toState SeenBoth
+
+
+flipBoxesFrom : String -> Bool -> Int -> Model -> Model
+flipBoxesFrom name isChecked index model =
+    let
+        toModel { boxes } =
+            { model | boxes = boxes }
+    in
+    flipBoxThing name index model.boxes isChecked |> toModel
+
+
+flipMultipleBoxes : String -> Bool -> Model -> Model
+flipMultipleBoxes name isChecked model =
+    case model.lastCheckedIndex of
+        Just index ->
+            flipBoxesFrom name isChecked index model
+
+        Nothing ->
+            flipBoxAt name isChecked model
+
+
 checkABox : Model -> String -> Bool -> Model
 checkABox model name isChecked =
     case model.checkMultiple of
         True ->
-            model
+            flipMultipleBoxes name isChecked model
 
         False ->
             flipBoxAt name isChecked model
@@ -131,6 +237,7 @@ updateCheckMultiple status key model =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
+    -- Debug.log "model"
     case msg of
         BoxClicked value isChecked ->
             ( checkABox model value isChecked, Cmd.none )
@@ -152,7 +259,7 @@ checkBoxView box =
     in
     div [ class "item" ]
         [ input [ type_ "checkbox", id formattedName, setChangeHandler box.name, checked box.checked ] []
-        , p []
+        , span []
             [ label [ for formattedName ] [ text box.name ] ]
         ]
 
