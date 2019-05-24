@@ -114,13 +114,6 @@ flipBox flippedName isChecked box =
         box
 
 
-
--- get the index of the box we ticked
--- work out what indexes we need to check
--- check each of those indexes
--- ...
-
-
 type alias BoxName =
     String
 
