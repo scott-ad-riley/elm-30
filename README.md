@@ -102,3 +102,13 @@ This was a bunch of fun - though not something i'd recommend using for elm. The 
 * I also grabbed some initialization values from javascript using Flags as well to see how that behaved - was very easy to implement.
 
 I also left in (but commented out) my debug code that I used when translating the coordinate system - see `modelInfo` and `pathInfo`.
+
+## 10 Shift for Multiple Checkboxes
+
+This was pretty hard, initially because I had done about 40% of it in Elm 0.18 a while ago, so came back to it re-learning Elm as well as upgrading to 0.19.
+
+Individual checkboxes are modelled as a record with their text and a boolean for their state. We map over each of them in the simple case and flip the boolean value if it's supposed to be flipped.
+
+For the case with shift, we have a separate boolean in state that's updated via keydown/keyup of the shift key, and that causes us to use a different method for checkboxes via `checkABox`.
+
+I strugged on method names for a lot of this one, a lot of the methods I have are just variations on flip, check, checkbox, box. The algorithm for flipping boxes works _ok_ it has a slight bug where the last checked checkbox is being updated when it shouldn't be.
