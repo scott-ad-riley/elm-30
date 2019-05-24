@@ -133,8 +133,8 @@ type alias CheckboxAcc =
     { state : CheckboxIteratorState, boxes : List Box }
 
 
-flipBoxThing : BoxName -> BoxIndex -> List Box -> Bool -> CheckboxAcc
-flipBoxThing name index list isChecked =
+flipBoxList : BoxName -> BoxIndex -> List Box -> Bool -> CheckboxAcc
+flipBoxList name index list isChecked =
     List.foldl (forEachBox isChecked) { state = SeenNeither name index, boxes = [] } (List.indexedMap Tuple.pair list)
 
 
@@ -191,7 +191,7 @@ flipBoxesFrom name isChecked index model =
         toModel { boxes } =
             { model | boxes = boxes }
     in
-    flipBoxThing name index model.boxes isChecked |> toModel
+    flipBoxList name index model.boxes isChecked |> toModel
 
 
 flipMultipleBoxes : String -> Bool -> Model -> Model
